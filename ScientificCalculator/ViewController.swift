@@ -113,7 +113,15 @@ class ViewController: UIViewController {
             else {
                 displayValue = 0
             }
-            descriptionDisplay.text = result.description + (result.isPending ? "..." : "")
+            var description = result.description
+            if result.isPending {
+                description.removeLast()
+                description = description + "..."
+            }
+            else if description != "0" {
+                description = description + " ="
+            }
+            descriptionDisplay.text = description
         }
         else {
             displayValue = 0
