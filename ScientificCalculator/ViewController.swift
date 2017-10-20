@@ -12,6 +12,8 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var calculatorDisplay: UILabel!
     
+    @IBOutlet weak var descriptionDisplay: UILabel!
+    
     private var brain = CalculatorBrain()
     
     private var userIsInTheMiddleOfTyping = false
@@ -84,7 +86,10 @@ class ViewController: UIViewController {
         brain.setOperation(to: sender.currentTitle!)
        
         if let result = brain.evaluate() {
-            displayValue = result
+            if result.result != nil {
+                displayValue = result.result!
+            }
+            descriptionDisplay.text = result.description
         }
         else {
             displayValue = 0

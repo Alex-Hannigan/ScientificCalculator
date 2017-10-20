@@ -18,9 +18,9 @@ struct CalculatorBrain {
     }
     
     private enum Operations {
-        case unaryOperation((Double) -> Double)
-        case binaryOperation((Double, Double) -> Double)
-        case constant(Double)
+        case unaryOperation((Double) -> Double, (String) -> String)
+        case binaryOperation((Double, Double) -> Double, (String, String) -> String)
+        case constant(Double, String)
         case equals
         case resetEverything
     }
@@ -34,48 +34,49 @@ struct CalculatorBrain {
     }
     
     private let operations = [
-        "√": Operations.unaryOperation(sqrt),
-        "+/-": Operations.unaryOperation(-),
-        "sin": Operations.unaryOperation(sin),
-        "cos": Operations.unaryOperation(cos),
-        "tan": Operations.unaryOperation(tan),
-        "x²": Operations.unaryOperation( { $0 * $0 } ),
-        "x³": Operations.unaryOperation( { $0 * $0 * $0 } ),
-        "+": Operations.binaryOperation(+),
-        "-": Operations.binaryOperation(-),
-        "×": Operations.binaryOperation(*),
-        "÷": Operations.binaryOperation(/),
-        "π": Operations.constant(Double.pi),
+        "√": Operations.unaryOperation(sqrt, { "√(" + $0 + ")" } ),
+        "+/-": Operations.unaryOperation(-, { "+/-" + $0 } ),
+        "sin": Operations.unaryOperation(sin, { "sin(" + $0 + ")" }),
+        "cos": Operations.unaryOperation(cos, { "cos(" + $0 + ")" }),
+        "tan": Operations.unaryOperation(tan, { "tan(" + $0 + ")" }),
+        "x²": Operations.unaryOperation( { $0 * $0 } , { $0 + "²" }),
+        "x³": Operations.unaryOperation( { $0 * $0 * $0 } , { $0 + "³" }),
+        "+": Operations.binaryOperation(+, { $0 + " + " + $1 } ),
+        "-": Operations.binaryOperation(-, { $0 + " - " + $1 } ),
+        "×": Operations.binaryOperation(*, { $0 + " × " + $1 } ),
+        "÷": Operations.binaryOperation(/, { $0 + " ÷ " + $1 } ),
+        "π": Operations.constant(Double.pi, "π"),
         "=": Operations.equals,
         "C": Operations.resetEverything
     ]
     
-    private struct PendingBindingOperation {
-        let firstOperand: Double
+    private struct PendingBinaryOperation {
+        let firstOperand: (Double, String)
         let function: (Double, Double) -> Double
+        let description: (String, String) -> String
         
-        func perform(with secondOperand: Double) -> Double {
-            return function(firstOperand, secondOperand)
+        func perform(with secondOperand: (Double, String)) -> (Double, String) {
+            return (function(firstOperand.0, secondOperand.0), description(firstOperand.1, secondOperand.1))
         }
     }
     
-    func evaluate () -> Double? {
-        var accumulator: Double?
-        var pendingBinaryOperation: PendingBindingOperation?
+    func evaluate () -> (result: Double?, description: String, isPending: Bool)? {
+        var accumulator: (Double, String)?
+        var pendingBinaryOperation: PendingBinaryOperation?
         
         func performOperation(of operation: String) {
             if let operation = operations[operation] {
                 switch operation {
-                case .unaryOperation(let function):
+                case .unaryOperation(let function, let description):
                     if accumulator != nil {
-                        accumulator = function(accumulator!)
+                        accumulator = (function(accumulator!.0), description(accumulator!.1))
                     }
-                case .binaryOperation(let function):
+                case .binaryOperation(let function, let description):
                     if accumulator != nil {
                         if pendingBinaryOperation != nil {
                             accumulator = pendingBinaryOperation!.perform(with: accumulator!)
                         }
-                        pendingBinaryOperation = PendingBindingOperation(firstOperand: accumulator!, function: function)
+                        pendingBinaryOperation = PendingBinaryOperation(firstOperand: accumulator!, function: function, description: description)
                     }
                 case .constant(let value):
                     accumulator = value
@@ -91,16 +92,32 @@ struct CalculatorBrain {
             }
         }
         
+        var result: Double? {
+            if accumulator != nil {
+                return accumulator!.0
+            }
+            return nil
+        }
+        
+        var description: String? {
+            if pendingBinaryOperation != nil {
+                return pendingBinaryOperation!.description(pendingBinaryOperation!.firstOperand.1, accumulator?.1 ?? "")
+            }
+            else {
+                return accumulator?.1
+            }
+        }
+        
         for element in stack {
             switch element {
             case .operand(let value):
-                accumulator = value
+                accumulator = (value, "\(value)")
             case .operation(let operation):
                 performOperation(of: operation)
             }
         }
         
-        return accumulator
+        return (result, description ?? "", pendingBinaryOperation != nil)
     }
     
 }
