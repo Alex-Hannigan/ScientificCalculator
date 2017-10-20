@@ -91,6 +91,12 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTyping = false
     }
     
+    @IBAction func clearM(_ sender: UIButton) {
+        variables = [:]
+        mDisplay.text = "0"
+        userIsInTheMiddleOfTyping = false
+    }
+    
     @IBAction func useM(_ sender: UIButton) {
         if let variableName = sender.currentTitle {
             brain.setOperand(variable: variableName)
