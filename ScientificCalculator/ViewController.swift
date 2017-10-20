@@ -11,12 +11,15 @@ import UIKit
 class ViewController: UIViewController {
     
     @IBOutlet weak var calculatorDisplay: UILabel!
-    
     @IBOutlet weak var descriptionDisplay: UILabel!
+    @IBOutlet weak var mDisplay: UILabel!
     
     private var brain = CalculatorBrain()
     
     private var userIsInTheMiddleOfTyping = false
+    
+    // To store the value of 'M'
+    private var variables: [String: Double] = [:]
     
     var displayValue: Double {
         get {
@@ -82,11 +85,22 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func performOperation(_ sender: UIButton) {
-        brain.setOperand(to: displayValue)
-        brain.setOperation(to: sender.currentTitle!)
-       
-        if let result = brain.evaluate() {
+    @IBAction func assignToM(_ sender: UIButton) {
+        variables["M"] = displayValue
+        mDisplay.text = calculatorDisplay!.text!
+        userIsInTheMiddleOfTyping = false
+    }
+    
+    @IBAction func useM(_ sender: UIButton) {
+        if let variableName = sender.currentTitle {
+            brain.setOperand(variable: variableName)
+            displayResult()
+            userIsInTheMiddleOfTyping = false
+        }
+    }
+    
+    private func displayResult() {
+        if let result = brain.evaluate(using: variables) {
             if result.result != nil {
                 displayValue = result.result!
             }
@@ -98,7 +112,13 @@ class ViewController: UIViewController {
         else {
             displayValue = 0
         }
+    }
+    
+    @IBAction func performOperation(_ sender: UIButton) {
+        brain.setOperand(to: displayValue)
+        brain.setOperation(to: sender.currentTitle!)
         
+        displayResult()
         userIsInTheMiddleOfTyping = false
     }
 }

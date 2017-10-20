@@ -15,6 +15,7 @@ struct CalculatorBrain {
     private enum Element {
         case operand(Double)
         case operation(String)
+        case variable(String)
     }
     
     private enum Operations {
@@ -27,6 +28,10 @@ struct CalculatorBrain {
     
     mutating func setOperand (to operand: Double) {
         stack.append(Element.operand(operand))
+    }
+    
+    mutating func setOperand (variable named: String) {
+        stack.append(Element.variable(named))
     }
     
     mutating func setOperation (to operation: String) {
@@ -60,7 +65,7 @@ struct CalculatorBrain {
         }
     }
     
-    func evaluate () -> (result: Double?, description: String, isPending: Bool)? {
+    func evaluate (using variables: Dictionary<String, Double>?) -> (result: Double?, description: String, isPending: Bool)? {
         var accumulator: (Double, String)?
         var pendingBinaryOperation: PendingBinaryOperation?
         
@@ -118,6 +123,8 @@ struct CalculatorBrain {
                 accumulator = (value, valueString)
             case .operation(let operation):
                 performOperation(of: operation)
+            case .variable(let variable):
+                accumulator = (variables?[variable] ?? 0, variable)
             }
         }
         
