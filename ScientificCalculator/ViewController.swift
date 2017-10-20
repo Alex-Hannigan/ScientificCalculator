@@ -67,6 +67,7 @@ class ViewController: UIViewController {
     
     @IBAction func randomDouble(_ sender: UIButton) {
         displayValue = Double(arc4random()) / Double(UINT32_MAX)
+        userIsInTheMiddleOfTyping = false
     }
     
     @IBAction func backspace(_ sender: UIButton) {
@@ -88,6 +89,9 @@ class ViewController: UIViewController {
         if let result = brain.evaluate() {
             if result.result != nil {
                 displayValue = result.result!
+            }
+            else {
+                displayValue = 0
             }
             descriptionDisplay.text = result.description
         }

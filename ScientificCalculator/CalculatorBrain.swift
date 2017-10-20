@@ -101,7 +101,7 @@ struct CalculatorBrain {
         
         var description: String? {
             if pendingBinaryOperation != nil {
-                return pendingBinaryOperation!.description(pendingBinaryOperation!.firstOperand.1, accumulator?.1 ?? "")
+                return pendingBinaryOperation!.description(pendingBinaryOperation!.firstOperand.1, "")
             }
             else {
                 return accumulator?.1
@@ -111,13 +111,17 @@ struct CalculatorBrain {
         for element in stack {
             switch element {
             case .operand(let value):
-                accumulator = (value, "\(value)")
+                var valueString = String(value)
+                if valueString.hasSuffix(".0") {
+                    valueString = String(valueString.dropLast(2))
+                }
+                accumulator = (value, valueString)
             case .operation(let operation):
                 performOperation(of: operation)
             }
         }
         
-        return (result, description ?? "", pendingBinaryOperation != nil)
+        return (result, description ?? "0", pendingBinaryOperation != nil)
     }
     
 }
