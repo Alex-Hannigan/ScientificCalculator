@@ -49,7 +49,7 @@ class ViewController: UIViewController {
                 }
                 // Prevent the input of extraneous zeros
             case "0":
-                if displayValue == 0 {
+                if calculatorDisplay.text == "0" {
                     break
                 }
                 fallthrough
