@@ -47,9 +47,6 @@ class ViewController: UIViewController {
                     calculatorDisplay.text = "0" + digit
                     userIsInTheMiddleOfTyping = true
                 }
-            case "M":
-                calculatorDisplay.text = "M"
-                userIsInTheMiddleOfTyping = false
                 // Prevent the input of extraneous zeros
             case "0":
                 if calculatorDisplay.text == "0" {
@@ -132,18 +129,11 @@ class ViewController: UIViewController {
     }
     
     @IBAction func performOperation(_ sender: UIButton) {
-        if let calcText = calculatorDisplay.text {
-            if calcText == "M" {
-            brain.setOperand(variable: calcText)
-        }
-        else {
-            brain.setOperand(to: displayValue)
-        }
+        brain.setOperand(to: displayValue)
         brain.setOperation(to: sender.currentTitle!)
         
         displayResult()
         userIsInTheMiddleOfTyping = false
-        }
     }
 }
 
